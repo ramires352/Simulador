@@ -1,6 +1,7 @@
 #include "instruction_set.h"
 #include "registers.h"
 #include "functions.h"
+#include <stdio.h>
 
 /*
 Bit assignments:
@@ -29,22 +30,58 @@ Bit assignments:
     KKKKKKKK = 8-bit constant
 */
 
+/* ADD with carry
+Adds two registers and the contents of the C Flag and places the result in the destination register Rd.
+
+Rd ← Rd + Rr + C
+
+0001 11rd dddd rrrr */
+void ADC(int rd, int rr){
+    uint8_t Rd = R[rd];
+    uint8_t Rr = R[rr];
+
+    uint8_t result = Rd + Rr;
+
+    computeZ8bits(result);
+    computeN8bits(result);
+    computeV8bits(Rd, Rr, result);
+    computeC8bits(Rd, Rr, result);
+    computeH8bits(Rd, Rr, result);
+    computeS();
+
+    R[rd] = result + SREG.C;
+}
+
+/* Logical AND
+Performs the logical AND between the contents of register Rd and register Rr, and places the result in the
+destination register Rd.
+
+Rd ← Rd • Rr
+
+0010 00rd dddd rrrr */
+void AND(int rd, int rr){
+    
+}
+
 
 /* ADD without carry
+Adds two registers without the C Flag and places the result in the destination register Rd.
 
-0000 11rd dddd rrrr
+Rd ← Rd + Rr 
 
-Rd <- Rd + Rr */
-
+0000 11rd dddd rrrr */
 void ADD(int rd, int rr){
     uint8_t Rd = R[rd];
     uint8_t Rr = R[rr];
 
     uint8_t result = Rd + Rr;
 
-    checkZ7(result);
-    checkN7(result);
-
-
-    Rd = result;
+    computeZ8bits(result);
+    computeN8bits(result);
+    computeV8bits(Rd, Rr, result);
+    computeC8bits(Rd, Rr, result);
+    computeH8bits(Rd, Rr, result);
+    computeS();
+    
+    R[rd] = result;
 }

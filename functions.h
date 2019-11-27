@@ -2,7 +2,10 @@
 
 /* Functions to help on instruction_set */
 
-void checkZ7(uint8_t result);
-void checkN7(uint8_t result);
-void checkN15(uint16_t result);
-void checkS();
+void computeZ8bits(uint8_t result);
+void computeN8bits(uint8_t result);
+void computeN16bits(uint16_t result);
+void computeH8bits(uint8_t rd, uint8_t rr, uint8_t result);
+void computeV8bits(uint8_t rd, uint8_t rr, uint8_t result);
+void computeC8bits(uint8_t rd, uint8_t rr, uint8_t result);
+void computeS();
