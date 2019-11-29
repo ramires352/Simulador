@@ -94,3 +94,41 @@ void computeC8bits(uint8_t rd, uint8_t rr, uint8_t result){
 
     SREG.C = c;
 }
+
+//Return SREG flag name
+uint8_t getSREGflag(int s){
+    uint8_t flag;
+    
+    switch (s)
+    {
+    case 7:
+        flag = SREG.I;
+        break;
+    case 6:
+        flag = SREG.T;
+        break;
+    case 5:
+        flag = SREG.H;
+        break;
+    case 4:
+        flag = SREG.S;
+        break;
+    case 3:
+        flag = SREG.V;
+        break;
+    case 2:
+        flag = SREG.N;
+        break;
+    case 1:
+        flag = SREG.Z;
+        break;
+    case 0:
+        flag = SREG.C;
+        break;
+    default:
+        printf("INVALID SREG FLAG.");
+        exit(1);
+    }
+    
+    return flag;
+}

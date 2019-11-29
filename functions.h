@@ -9,3 +9,4 @@ void computeH8bits(uint8_t rd, uint8_t rr, uint8_t result);
 void computeV8bits(uint8_t rd, uint8_t rr, uint8_t result);
 void computeC8bits(uint8_t rd, uint8_t rr, uint8_t result);
 void computeS();
+uint8_t getSREGflag(int s);
