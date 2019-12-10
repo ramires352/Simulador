@@ -95,7 +95,7 @@ void computeC8bits(uint8_t rd, uint8_t rr, uint8_t result){
     SREG.C = c;
 }
 
-//Return SREG flag name
+//Return SREG flag
 uint8_t getSREGflag(int s){
     uint8_t flag;
     
@@ -129,6 +129,6 @@ uint8_t getSREGflag(int s){
         printf("INVALID SREG FLAG.");
         exit(1);
     }
-    
+
     return flag;
 }
