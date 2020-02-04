@@ -26,7 +26,7 @@ void computeZ8bits(uint8_t result){
 // Check bit 7 or result
 // Set if MSB of the result is set; cleared otherwise.
 void computeN8bits(uint8_t result){
-    if(result && 0b10000000 > 0){
+    if(result & 0b10000000 > 0){
         SREG.N = 1;
     }
     else{
