@@ -755,3 +755,291 @@ void BST(int rd, int b){
         SREG.T = 0;
     }
 }
+
+/*CALL – Long Call to a Subroutine
+Calls to a subroutine within the entire Program memory. The return address (to the instruction after the
+CALL) will be stored onto the Stack. (See also RCALL). The Stack Pointer uses a post-decrement
+scheme during CALL.
+
+PC ← k Devices with 16-bit PC, 128KB Program memory maximum.
+
+PC ← k Devices with 22-bit PC, 8MB Program memory maximum.
+
+0 ≤ k < 64K
+
+1001 010k kkkk 111k kkkk kkkk kkkk kkkk */
+void CALL(int k){
+    PC = k;
+}
+
+/* CBI – Clear Bit in I/O Register
+
+Clears a specified bit in an I/O register. This instruction operates on the lower 32 I/O registers –
+addresses 0-31.
+
+I/O(A,b) ← 0
+
+0 ≤ A ≤ 31, 0 ≤ b ≤ 7
+
+1001 1000 AAAA Abbb */
+void CBI(int A, uint8_t b){
+    uint8_t mask = 1;
+    mask = 0 << b;
+
+    uint8_t RA = R[A];
+
+    RA = RA & mask;
+
+    R[A] = RA;
+
+    PC++;
+}
+
+/* CBR – Clear Bits in Register
+
+Clears the specified bits in register Rd. Performs the logical AND between the contents of register Rd and
+the complement of the constant mask K. The result will be placed in register Rd.
+
+Rd ← Rd • ($FF - K)
+
+6 ≤ d ≤ 31, 0 ≤ K ≤ 255 */
+void CBR(int rd, uint8_t k){
+    uint8_t Rd = R[rd];
+
+    Rd = Rd & (255 - k);
+    
+    R[rd] = Rd;
+
+    computeS();
+    SREG.V = 0;
+    computeN8bits(Rd);
+    computeZ8bits(Rd);
+
+    PC++;
+}
+
+/* Clears the Carry Flag (C) in SREG (Status Register).
+
+C ← 0
+
+1001 0100 1000 1000 */
+void CLC(){
+    SREG.C = 0;
+    PC++;
+}
+
+/* Clears the Half Carry Flag (H) in SREG (Status Register).
+
+H ← 0
+
+1001 0100 1101 1000 */
+void CLH(){
+    SREG.H = 0;
+    PC++;
+}
+
+/* Clears the Global Interrupt Flag (I) in SREG (Status Register). The interrupts will be immediately
+disabled. No interrupt will be executed after the CLI instruction, even if it occurs simultaneously with the
+CLI instruction.
+
+I ← 0
+
+1001 0100 1111 1000 */
+void CLI(){
+    SREG.I = 0;
+    PC++;
+}
+
+/* Clears the Negative Flag (N) in SREG (Status Register).
+
+N ← 0
+
+1001 0100 1010 1000 */
+void CLN(){
+    SREG.N = 0;
+    PC++;
+}
+
+/* Clears a register. This instruction performs an Exclusive OR between a register and itself. This will clear
+all bits in the register.
+
+Rd ← Rd ⊕ Rd
+
+0 ≤ d ≤ 31
+
+0010 01dd dddd dddd */
+
+void CLR(int rd){
+    uint8_t Rd = R[rd];
+
+    uint8_t result = Rd ^ Rd;
+
+    R[rd] = result;
+
+    SREG.S = 0;
+    SREG.V = 0;
+    SREG.N = 0;
+    SREG.Z = 1;
+
+    PC++;
+}
+
+/* Clears the Signed Flag (S) in SREG (Status Register).
+
+S ← 0
+
+1001 0100 1100 1000 */
+void CLS(){
+    SREG.S = 0;
+    PC++;
+}
+
+/* Clears the T Flag in SREG (Status Register).
+
+T ← 0
+
+1001 0100 1110 1000 */
+void CLT(){
+    SREG.T = 0;
+    PC++;
+}
+
+/* Clears the Overflow Flag (V) in SREG (Status Register).
+
+V ← 0
+
+1001 0100 1011 1000 */
+void CLV(){
+    SREG.V = 0;
+    PC++;
+}
+
+/* Clears the Zero Flag (Z) in SREG (Status Register).
+
+Z ← 0
+
+1001 0100 1001 1000 */
+void CLZ(){
+    SREG.Z = 0;
+    PC++;
+}
+
+/* This instruction performs a One’s Complement of register Rd.
+
+Rd ← $FF - Rd
+
+0 ≤ d ≤ 31
+
+1001 010d dddd 0000 */
+void COM(int rd){
+    uint8_t Rd = R[rd];
+
+    uint8_t result = Rd & (255 - Rd);
+
+    R[rd] = result;
+
+    computeS();
+
+    SREG.V = 0;
+
+    computeN8bits(result);
+    computeZ8bits(result);
+    SREG.C = 1;
+
+    PC++;
+}
+
+/* This instruction performs a compare between two registers Rd and Rr. None of the registers are changed.
+All conditional branches can be used after this instruction.
+
+Rd - Rr
+
+0 ≤ d ≤ 31, 0 ≤ r ≤ 31
+
+0001 01rd dddd rrrr */
+void CP(int rd, int rr){
+    uint8_t Rd = R[rd];
+    uint8_t Rr = R[rr];
+
+    uint8_t result = Rd - Rr;
+
+    computeH8bits(Rd, Rr, result);
+    computeS();
+    computeV8bits(Rd, Rr, result);
+    computeN8bits(result);
+    computeZ8bits(result);
+    computeC8bits(Rd, Rr, result);
+
+    PC++;
+}
+
+/* This instruction performs a compare between two registers Rd and Rr and also takes into account the
+previous carry. None of the registers are changed. All conditional branches can be used after this
+instruction.
+
+Rd - Rr - C
+
+0 ≤ d ≤ 31, 0 ≤ r ≤ 31
+
+0000 01rd dddd rrrr */
+void CPC(int rd, int rr){
+    uint8_t Rr = R[rr];
+    uint8_t Rd = R[rd];
+
+    uint8_t result = Rd - Rr - SREG.C;
+
+    computeH8bits(Rd, Rr, result);
+    computeS();
+    computeV8bits(Rd, Rr, result);
+    computeN8bits(result);
+    computeZ8bits(result);
+    computeC8bits(Rd, Rr, result);
+
+    PC++;
+}
+
+/* This instruction performs a compare between register Rd and a constant. The register is not changed. All
+conditional branches can be used after this instruction.
+
+Rd - K
+
+16 ≤ d ≤ 31, 0 ≤ K ≤ 255
+
+0011 KKKK dddd KKKK */
+void CPI(int rd, uint8_t K){
+    uint8_t Rd = R[rd];
+
+    uint8_t result = Rd - K;
+
+    computeH(Rd, K, result);
+    computeS();
+    computeV8bits(Rd, K, result);
+    computeN8bits(result);
+    computeZ8bits(result);
+    computeC8bits(Rd, K, result);
+}
+
+/* Subtracts one -1- from the contents of register Rd and places the result in the destination register Rd.
+The C Flag in SREG is not affected by the operation, thus allowing the DEC instruction to be used on a
+loop counter in multiple-precision computations.
+When operating on unsigned values, only BREQ and BRNE branches can be expected to perform
+consistently. When operating on two’s complement values, all signed branches are available.
+
+Rd ← Rd - 1
+
+0 ≤ d ≤ 31
+
+1001 010d dddd 1010 */
+void DEC(int rd){
+    uint8_t Rd = R[rd];
+
+    uint8_t result = Rd - 1;
+
+    R[rd] = result;
+
+    computeS();
+    computeN8bits(result);
+    computeZ8bits(result);
+
+    PC++;
+}
