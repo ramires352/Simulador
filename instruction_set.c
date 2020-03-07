@@ -1011,7 +1011,7 @@ void CPI(int rd, uint8_t K){
 
     uint8_t result = Rd - K;
 
-    computeH(Rd, K, result);
+    computeH8bits(Rd, K, result);
     computeS();
     computeV8bits(Rd, K, result);
     computeN8bits(result);
@@ -1040,6 +1040,301 @@ void DEC(int rd){
     computeS();
     computeN8bits(result);
     computeZ8bits(result);
+
+    PC++;
+}
+
+/* Performs the logical EOR between the contents of register Rd and register Rr and places the result in the
+destination register Rd.
+
+Rd ← Rd ⊕ Rr
+
+0 ≤ d ≤ 31, 0 ≤ r ≤ 3
+
+0010 01rd dddd rrrr */
+void EOR(int rd, int rr){
+    uint8_t Rd = R[rd];
+    uint8_t Rr = R[rr];
+
+    uint8_t result = Rd ^ Rr;
+
+    R[rd] = result;
+
+    computeS();
+    SREG.V = 0;
+    computeN8bits(result);
+    computeZ8bits(result);
+
+    PC++;
+}
+
+/* Adds one -1- to the contents of register Rd and places the result in the destination register Rd.
+The C Flag in SREG is not affected by the operation, thus allowing the INC instruction to be used on a
+loop counter in multiple-precision computations.
+When operating on unsigned numbers, only BREQ and BRNE branches can be expected to perform
+consistently. When operating on two’s complement values, all signed branches are available.
+
+Rd ← Rd + 1
+
+0 ≤ d ≤ 31
+
+1001 010d dddd 0011 */
+void INC(int rd){
+    R[rd] = R[rd] + 1;
+
+    computeS();
+    computeN8bits(R[rd]);
+    computeZ8bits(R[rd]);
+}
+
+/* Jump to an address within the entire 4M (words) Program memory. See also RJMP.
+This instruction is not available in all devices. Refer to the device specific instruction set summary.
+
+PC ← k
+
+0 ≤ k < 4M
+
+1001 010k kkkk 110k kkkk kkkk kkkk kkkk */
+void JMP(int k){
+    PC = k;
+}
+
+/* Loads an 8-bit constant directly to register 16 to 31
+
+Rd ← K
+
+16 ≤ d ≤ 31, 0 ≤ K ≤ 255
+
+1110 KKKK dddd KKKK */
+void LDI(int rd, uint8_t K){
+    R[rd] = K;
+
+    PC++;
+}
+
+/* Shifts all bits in Rd one place to the left. Bit 0 is cleared. Bit 7 is loaded into the C Flag of the SREG. This
+operation effectively multiplies signed and unsigned values by two.
+
+0 ≤ d ≤ 31
+
+0000 11dd dddd dddd */
+void LSL(int rd){
+    uint8_t mask = 0b10000000;
+
+    uint8_t C = R[rd] & mask;
+
+    if(C){
+        SREG.C = 1;
+    }
+    else{
+        SREG.C = 0;
+    }
+
+    uint8_t result = R[rd] << 1;
+    R[rd] = result;
+
+    computeS();
+    SREG.V = SREG.N ^ SREG.C;
+    computeN8bits(result);
+    computeZ8bits(result);
+
+    PC++;
+}
+
+/* Shifts all bits in Rd one place to the right. Bit 7 is cleared. Bit 0 is loaded into the C Flag of the SREG.
+This operation effectively divides an unsigned value by two. The C Flag can be used to round the result.
+
+0 ≤ d ≤ 31
+
+1001 010d dddd 0110 */
+void LSR(int rd){
+    uint8_t mask = 0b00000001;
+
+    uint8_t C = R[rd] & mask;
+
+    if(C){
+        SREG.C = 1;
+    }
+    else{
+        SREG.C = 0;
+    }
+
+    uint8_t result = R[rd] >> 1;
+    R[rd] = result;
+
+    computeS();
+    SREG.V = SREG.N ^ SREG.C;
+    SREG.N = 0;
+    computeZ8bits(result);
+
+    PC++;
+}
+
+/* This instruction makes a copy of one register into another. The source register Rr is left unchanged, while
+the destination register Rd is loaded with a copy of Rr.
+
+Rd ← Rr
+
+0 ≤ d ≤ 31, 0 ≤ r ≤ 31
+
+0010 11rd dddd rrrr */
+void MOV(int rd, int rr){
+    R[rd] = R[rr];
+
+    PC++;
+}
+
+/* Replaces the contents of register Rd with its two’s complement; the value $80 is left unchanged.
+
+Rd ← $00 - Rd
+
+0 ≤ d ≤ 31
+
+1001 010d dddd 0001 */
+void NEG(int rd){
+    R[rd] = 0 - R[rd];
+
+    computeS();
+    computeN8bits(R[rd]);
+    computeZ8bits(R[rd]);
+
+    PC++;
+}
+
+/* This instruction performs a single cycle No Operation.
+
+0000 0000 0000 0000 0000 */
+void NOP(){
+    PC++;
+}
+
+/* Sets specified bits in register Rd. Performs the logical ORI between the contents of register Rd and a
+constant mask K, and places the result in the destination register Rd.
+
+Rd ← Rd v K
+
+16 ≤ d ≤ 31, 0 ≤ K ≤ 255
+
+0110 KKKK dddd KKKK */
+void SBR(int rd, uint8_t K){
+    R[rd] = R[rd] | K;
+
+    computeS();
+    SREG.V = 0;
+    computeN8bits(R[rd]);
+    computeZ8bits(R[rd]);
+
+    PC++;
+}
+
+/* Sets the Carry Flag (C) in SREG (Status Register).
+
+C ← 1
+
+1001 0100 0000 1000 */
+void SEC(){
+    SREG.C = 1;
+    PC++;
+}
+
+/* Sets the Half Carry (H) in SREG (Status Register).
+
+H ← 1
+
+1001 0100 0101 1000 */
+void SEH(){
+    SREG.H = 1;
+    PC++;
+}
+
+/* Sets the Global Interrupt Flag (I) in SREG (Status Register). The instruction following SEI will be
+executed before any pending interrupts.
+
+I ← 1
+
+1001 0100 0111 1000 */
+void SEI(){
+    SREG.I = 1;
+    PC++;
+}
+
+/* Sets the Negative Flag (N) in SREG (Status Register).
+
+N ← 1
+
+1001 0100 0010 1000 */
+void SEN(){
+    SREG.N = 1;
+    PC++;
+}
+
+/* Loads $FF directly to register Rd.
+
+Rd ← $FF
+
+16 ≤ d ≤ 31
+
+1110 1111 dddd 1111 */
+void SER(int rd){
+    R[rd] = 255;
+    PC++;
+}
+
+/* Sets the Signed Flag (S) in SREG (Status Register).
+
+S ← 1
+
+1001 0100 0100 1000 */
+void SES(){
+    SREG.S = 1;
+    PC++;
+}
+
+/* Sets the T Flag in SREG (Status Register).
+
+T ← 1
+
+1001 0100 0110 1000 */
+void SET(){
+    SREG.T = 1;
+    PC++;
+}
+
+/* Sets the Overflow Flag (V) in SREG (Status Register).
+
+V ← 1
+
+1001 0100 0011 1000 */
+void SEV(){
+    SREG.V = 1;
+    PC++;
+}
+
+/* Sets the Zero Flag (Z) in SREG (Status Register).
+
+Z ← 1
+
+1001 0100 0001 1000 */
+void SEZ(){
+    SREG.Z = 1;
+    PC++;
+}
+
+/* Tests if a register is zero or negative. Performs a logical AND between a register and itself. The register
+will remain unchanged.
+
+Rd ← Rd • Rd
+
+0 ≤ d ≤ 31
+
+0010 00dd dddd dddd */
+void TST(int rd){
+    R[rd] = R[rd] & R[rd];
+    
+    computeS();
+    SREG.V = 0;
+    computeN8bits(R[rd]);
+    computeZ8bits(R[rd]);
 
     PC++;
 }

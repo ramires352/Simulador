@@ -47,3 +47,29 @@ void CPC(int rd, int rr);
 void CPI(int rd, uint8_t K);
 
 void DEC(int rd);
+
+void EOR(int rd, int rr);
+
+void INC(int rd);
+
+void LDI(int rd, uint8_t K);
+
+void LSL(int rd);
+void LSR(int rd);
+void MOV(int rd, int rr);
+
+void NEG(int rd);
+void NOP();
+
+void SBR(int rd, uint8_t K);
+
+void SEC();
+void SEH();
+void SEI();
+void SEN();
+void SER(int rd);
+void SES();
+void SET();
+void SEV();
+void SEZ();
+void TST(int rd);
