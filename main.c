@@ -8,6 +8,10 @@ Autorizo a continuação desse projeto
 para a comunidade acadêmica e sem
 fins lucrativos.
 
+Alterações e inclusões podem ser feitas
+desde que os nomes dos autores
+sempre constem no código.
+
 Contato:
 email: rrramires@homail.com
 
