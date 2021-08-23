@@ -1,3 +1,18 @@
+/*
+
+Simulador ATMEGA328p
+Universidade Estadual de Maringá
+Implementado por: Raul Ramires
+
+Autorizo a continuação desse projeto
+para a comunidade acadêmica e sem
+fins lucrativos.
+
+Contato:
+email: rrramires@homail.com
+
+*/
+
 #include "instruction_set.h"
 #include "registers.h"
 #include <stdio.h>
